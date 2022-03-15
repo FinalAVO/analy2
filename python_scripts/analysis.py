@@ -103,7 +103,15 @@ e.start()
 f.start()
 g.start()
 
-time.sleep(5)
+a.join()  # 서브 조인 시작
+b.join()
+c.join()
+d.join()
+e.join()
+f.join()
+g.join()
+
+logging.info("[Main-Thread] 프로그램을 종료합니다.")
 
 ## REDIS
 

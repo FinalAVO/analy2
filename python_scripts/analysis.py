@@ -10,31 +10,38 @@ import logging
 import threading
 import time, sys
 
-##
-def analy_func(name, target, df_review):
-    logging.info("[Sub-Thread] %s: 시작합니다.", name)
+## subject_count class
+class subject_count(threading.Thread):
+    def __init__(self, name, subject_li, df):
+        threading.Thread.__init__(self)
+        self.name = name
+        self.subject_li = subject_li
+        self.df = df
 
-    total_cnt = 0
-    star_sum = 0
-    index_li = []
-    subject_name_cnt = name + "_COUNT"
+    def run(self):
+        # logging.info("[Sub-Thread] %s: 시작합니다.", self.name)
 
-    for word in target:
-        df_dropped = df_review.drop(index_li)
-        df_filter = df_dropped[df_dropped["COMMENT"].str.contains(word, regex=False) == True]
-        index_li += df_filter.index.tolist()
-        total_cnt += df_filter["STAR"].count()
-        star_sum += df_filter["STAR"].sum()
+        total_cnt = 0
+        star_sum = 0
+        index_li = []
+        subject_name_cnt = self.name + "_COUNT"
 
-    if total_cnt == 0:
-        avg_star = float(0)
-    else:
-        avg_star = float(round(star_sum / total_cnt, 2))
+        for word in self.subject_li:
+            df_dropped = self.df.drop(index_li)
+            df_filter = df_dropped[df_dropped["COMMENT"].str.contains(word, regex=False) == True]
+            index_li += df_filter.index.tolist()
+            total_cnt += df_filter["STAR"].count()
+            star_sum += df_filter["STAR"].sum()
 
-    whole_result[name] = avg_star
-    whole_result[subject_name_cnt] = int(total_cnt)
+        if total_cnt == 0:
+            avg_star = float(0)
+        else:
+            avg_star = float(round(star_sum / total_cnt, 2))
 
-    logging.info("[Sub-Thread] %s: 종료합니다.", name)
+        whole_result[self.name] = avg_star
+        whole_result[subject_name_cnt] = int(total_cnt)
+
+        # logging.info("[Sub-Thread] %s: 종료합니다.", self.name)
 
 ## mongo 연결
 # arguments
@@ -44,7 +51,11 @@ user_id = sys.argv[2]
 start_date = sys.argv[3]
 end_date = sys.argv[4]
 
-client = MongoClient("mongodb://3.34.14.98:46171")
+with open('/analy2/config/mongo.json') as f:
+    mongo_config = json.load(f)
+    f.close()
+
+client = MongoClient(mongo_config["host"])
 db = client["review"]
 db_col = db[collection_name]
 
@@ -85,15 +96,15 @@ format = "%(asctime)s: %(message)s"  # Logging format 설정
 logging.basicConfig(format=format, level=logging.INFO, datefmt="%H:%M:%S")
 
 
-a = threading.Thread(target=analy_func, args=('DESIGN', design_li, df_review))
-b = threading.Thread(target=analy_func, args=('PROFILE', profile_li, df_review))
-c = threading.Thread(target=analy_func, args=('RESOURCE', resource_li, df_review))
-d = threading.Thread(target=analy_func, args=('SPEED', speed_li, df_review))
-e = threading.Thread(target=analy_func, args=('SAFETY', safety_li, df_review))
-f = threading.Thread(target=analy_func, args=('REMOVE', remove_li, df_review))
-g = threading.Thread(target=analy_func, args=('UPDATE', update_li, df_review))
+a = subject_count('DESIGN', design_li, df_review)
+b = subject_count('PROFILE', profile_li, df_review)
+c = subject_count('RESOURCE', resource_li, df_review)
+d = subject_count('SPEED', speed_li, df_review)
+e = subject_count('SAFETY', safety_li, df_review)
+f = subject_count('REMOVE', remove_li, df_review)
+g = subject_count('UPDATE', update_li, df_review)
 
-logging.info("[Main-Thread] 쓰레드 시작 전")
+# logging.info("[Main-Thread] 쓰레드 시작 전")
 
 a.start()  # 서브 스레드 시작
 b.start()
@@ -111,7 +122,7 @@ e.join()
 f.join()
 g.join()
 
-logging.info("[Main-Thread] 프로그램을 종료합니다.")
+# logging.info("[Main-Thread] 프로그램을 종료합니다.")
 
 ## REDIS
 

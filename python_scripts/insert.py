@@ -38,7 +38,7 @@ cursor = cnx.cursor()
 
 query_1 = ("INSERT INTO star_share_report "
         "(app_name, one_star, two_star, three_star, four_star, five_star, count, user_id, start_date, end_date) "
-        "VALUES (%(APP_NAME)s, %(ONE_STAR)s, %(TWO_STAR)s, %(THREE_STAR)s, %(FOUR_STAR)s, %(FIVE_STAR)s, %(COUNT)s, %(user_id)s, %(start_date)s, %(end_date)s)")
+        "VALUES (%(APP_NAME)s, %(ONE_STAR)s, %(TWO_STAR)s, %(THREE_STAR)s, %(FOUR_STAR)s, %(FIVE_STAR)s, %(COUNT)s, %(user_id)s, %(START_DATE)s, %(END_DATE)s)")
 
 cursor.execute(query_1, whole_result)
 cnx.commit()
@@ -54,7 +54,7 @@ cursor = cnx.cursor()
 for idx in range(len(subject_name)):
     query_2 = ("INSERT INTO star_report "
         "(app_name, subject, avg_star, count, user_id, start_date, end_date) "
-        "VALUES (%(APP_NAME)s, " + '"' + subject_name[idx] + '"' + ", %(" + subject_name[idx] + ")s, %(" + subject_name_cnt[idx] + ")s, %(user_id)s, %(start_date)s, %(end_date)s)")
+        "VALUES (%(APP_NAME)s, " + '"' + subject_name[idx] + '"' + ", %(" + subject_name[idx] + ")s, %(" + subject_name_cnt[idx] + ")s, %(user_id)s, %(START_DATE)s, %(END_DATE)s)")
 
     cursor.execute(query_2, whole_result)
     cnx.commit()

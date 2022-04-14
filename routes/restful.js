@@ -29,7 +29,19 @@ app.post('/analysis', function(req, res){
 
   analy_and_redis(options_analy, function(message){
     if (message == "Insert REDIS Done"){
-      res.send("Analyze Done")
+      let options_insert = {
+        mode: 'text',
+        pythonOptions: ['-u'],
+        args: [user_id]
+      }
+
+      insert_rds(options_insert, function(message){
+        if (message == "Insert RDS Done"){
+          res.send("Insert Done")
+        } else {
+          res.send("Insert Failed")
+        }
+      })
     } else {
       res.send("Analyze Failed")
     }
@@ -37,25 +49,25 @@ app.post('/analysis', function(req, res){
 
 });
 
-app.post('/insert-rds', function(req,res){
-  var user_id = req.body.user_id;
-
-  let options_insert = {
-    mode: 'text',
-    pythonOptions: ['-u'],
-    args: [user_id]
-  }
-
-  insert_rds(options_insert, function(message){
-    if (message == "Insert RDS Done"){
-      res.send("Insert Done")
-    } else {
-      res.send("Insert Failed")
-    }
-  })
-
-
-});
+// no longer needed
+// app.post('/insert-rds', function(req,res){
+//   var user_id = req.body.user_id;
+//
+//   let options_insert = {
+//     mode: 'text',
+//     pythonOptions: ['-u'],
+//     args: [user_id]
+//   }
+//
+//   insert_rds(options_insert, function(message){
+//     if (message == "Insert RDS Done"){
+//       res.send("Insert Done")
+//     } else {
+//       res.send("Insert Failed")
+//     }
+//   })
+//
+// });
 
 let analy_and_redis = function(options, callback){
   PythonShell.run('./python_scripts/analysis.py', options, function (err, result){

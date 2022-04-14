@@ -1,6 +1,5 @@
 import pymongo
 from pymongo import MongoClient
-# import mysql.connector
 import redis
 import pandas as pd
 from datetime import datetime
@@ -10,7 +9,7 @@ import logging
 import threading
 import time, sys
 
-## subject_count class
+## subject_count multi-threading class
 class subject_count(threading.Thread):
     def __init__(self, name, subject_li, df):
         threading.Thread.__init__(self)
@@ -19,8 +18,6 @@ class subject_count(threading.Thread):
         self.df = df
 
     def run(self):
-        # logging.info("[Sub-Thread] %s: 시작합니다.", self.name)
-
         total_cnt = 0
         star_sum = 0
         index_li = []
@@ -41,10 +38,8 @@ class subject_count(threading.Thread):
         whole_result[self.name] = avg_star
         whole_result[subject_name_cnt] = int(total_cnt)
 
-        # logging.info("[Sub-Thread] %s: 종료합니다.", self.name)
 
 ## mongo 연결
-# arguments
 
 collection_name = sys.argv[1]
 user_id = sys.argv[2]
@@ -72,7 +67,7 @@ whole_name = ["APP_NAME", "START_DATE", "END_DATE", "COUNT", "AVG_STAR",
               "ONE_STAR", "TWO_STAR", "THREE_STAR", "FOUR_STAR", "FIVE_STAR", "user_id"]
 
 whole_cnt = int(df_review["STAR"].count())
-whole_avg = int(round(df_review["STAR"].mean(), 2))
+whole_avg = round(df_review["STAR"].mean(), 2)
 whole_one = int(df_review[df_review["STAR"] == 1]["STAR"].count())
 whole_two = int(df_review[df_review["STAR"] == 2]["STAR"].count())
 whole_three = int(df_review[df_review["STAR"] == 3]["STAR"].count())

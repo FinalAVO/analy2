@@ -34,13 +34,19 @@ config = {
 cnx = mysql.connector.connect(**config)
 
 # insert into star_share_report
-cursor = cnx.cursor()
+cursor = cnx.cursor(buffered=True)
 
-query_1 = ("INSERT INTO star_share_report "
-        "(app_name, one_star, two_star, three_star, four_star, five_star, count, user_id, start_date, end_date) "
-        "VALUES (%(APP_NAME)s, %(ONE_STAR)s, %(TWO_STAR)s, %(THREE_STAR)s, %(FOUR_STAR)s, %(FIVE_STAR)s, %(COUNT)s, %(user_id)s, %(START_DATE)s, %(END_DATE)s)")
+query_1_cmp = "SELECT * FROM star_share_report WHERE app_name = (%(APP_NAME)s) AND user_id = (%(user_id)s) AND start_date = (%(START_DATE)s) AND end_date = (%(END_DATE)s)"
+cursor.execute(query_1_cmp, whole_result)
 
-cursor.execute(query_1, whole_result)
+if cursor.rowcount > 0:
+    pass
+else:
+    query_1 = ("INSERT INTO star_share_report "
+            "(app_name, one_star, two_star, three_star, four_star, five_star, count, user_id, start_date, end_date, avg_star) "
+            "VALUES (%(APP_NAME)s, %(ONE_STAR)s, %(TWO_STAR)s, %(THREE_STAR)s, %(FOUR_STAR)s, %(FIVE_STAR)s, %(COUNT)s, %(user_id)s, %(START_DATE)s, %(END_DATE)s, %(AVG_STAR)s)")
+
+    cursor.execute(query_1, whole_result)
 cnx.commit()
 
 # insert into star_report
@@ -48,16 +54,21 @@ cnx.commit()
 subject_name = ["DESIGN", "PROFILE", "RESOURCE", "SPEED", "SAFETY", "REMOVE", "UPDATE"]
 subject_name_cnt = ["DESIGN_COUNT", "PROFILE_COUNT", "RESOURCE_COUNT", "SPEED_COUNT",
                     "SAFETY_COUNT", "REMOVE_COUNT", "UPDATE_COUNT"]
+cursor = cnx.cursor(buffered=True)
 
-cursor = cnx.cursor()
+query_2_cmp = "SELECT * FROM star_report WHERE app_name = (%(APP_NAME)s) AND user_id = (%(user_id)s) AND start_date = (%(START_DATE)s) AND end_date = (%(END_DATE)s)"
+cursor.execute(query_2_cmp, whole_result)
 
-for idx in range(len(subject_name)):
-    query_2 = ("INSERT INTO star_report "
-        "(app_name, subject, avg_star, count, user_id, start_date, end_date) "
-        "VALUES (%(APP_NAME)s, " + '"' + subject_name[idx] + '"' + ", %(" + subject_name[idx] + ")s, %(" + subject_name_cnt[idx] + ")s, %(user_id)s, %(START_DATE)s, %(END_DATE)s)")
+if cursor.rowcount > 0:
+    pass
+else:
+    for idx in range(len(subject_name)):
+        query_2 = ("INSERT INTO star_report "
+            "(app_name, subject, avg_star, count, user_id, start_date, end_date) "
+            "VALUES (%(APP_NAME)s, " + '"' + subject_name[idx] + '"' + ", %(" + subject_name[idx] + ")s, %(" + subject_name_cnt[idx] + ")s, %(user_id)s, %(START_DATE)s, %(END_DATE)s)")
 
-    cursor.execute(query_2, whole_result)
-    cnx.commit()
+        cursor.execute(query_2, whole_result)
+        cnx.commit()
 
 cnx.close()
 print("Insert RDS Done")
